@@ -1,25 +1,29 @@
 function [grad_b, grad_W] = ComputeGradsNum(X, Y, W, b, lambda, h, K)
 
-no = size(W, 1);
-d = size(X, 1);
+grad_W = cell(numel(W), 1);
+grad_b = cell(numel(b), 1);
 
-grad_W = zeros(size(W));
-grad_b = zeros(no, 1);
+c = ComputeCost(X, W1, b1, W2, b2, K);
 
-c = ComputeCost(X, Y, W, b, lambda, K);
-
-for i=1:length(b)
-    b_try = b;
-    b_try(i) = b_try(i) + h;
-    c2 = ComputeCost(X, Y, W, b_try, lambda, K);
-    grad_b(i) = (c2-c) / h;
+for j=1:length(b)
+    grad_b{j} = zeros(size(b{j}));
+    
+    for i=1:length(b{j})
+        b_try = b;
+        b_try{j}(i) = b_try{j}(i) + h;
+        [c2, ~] = ComputeCost(X, Y, W, b_try, lambda, K);
+        grad_b{j}(i) = (c2-c) / h;
+    end
 end
 
-for i=1:numel(W)   
+for j=1:length(W)
+    grad_W{j} = zeros(size(W{j}));
     
-    W_try = W;
-    W_try(i) = W_try(i) + h;
-    c2 = ComputeCost(X, Y, W_try, b, lambda, K);
-    
-    grad_W(i) = (c2-c) / h;
+    for i=1:numel(W{j})   
+        W_try = W;
+        W_try{j}(i) = W_try{j}(i) + h;
+        [c2, ~] = ComputeCost(X, Y, W_try, b, lambda, K);
+        
+        grad_W{j}(i) = (c2-c) / h;
+    end
 end

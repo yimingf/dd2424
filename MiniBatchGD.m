@@ -37,4 +37,10 @@ for j=1:N/n_batch
   b1 = b1-v_b1;
   W2 = W2-v_W2;
   b2 = b2-v_b2;
+
+  % % update w/o momentum.
+  % W1 = W1-eta*grad_W1;
+  % b1 = b1-eta*grad_b1;
+  % W2 = W2-eta*grad_W2;
+  % b2 = b2-eta*grad_b2;
 end % for j

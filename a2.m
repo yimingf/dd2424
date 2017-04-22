@@ -28,7 +28,7 @@ hyper_parameters.lambda     = 0.001; % regularization rate
 hyper_parameters.n_batch    = 500; % number of batches
 hyper_parameters.n_epochs   = 60; % number of epoches
 hyper_parameters.decay_rate = 0.95;
-hyper_parameters.m          = 50; % hidden layer.
+hyper_parameters.m          = 100; % hidden layer.
 hyper_parameters.rho        = 0.9; % momentum parameter.
 
 W1 = hyper_parameters.a.*randn(hyper_parameters.m, hyper_parameters.d);
@@ -46,7 +46,7 @@ J_validation = zeros(hyper_parameters.n_epochs, 1);
 % N = split;
 
 % the training process
-for i=1:hyper_parameters.n_epochs
+for i=1:20
 
   [W1, b1, W2, b2] = MiniBatchGD(X, Y, W1, b1, W2, b2, hyper_parameters);%, lambda, K, d, m, eta, rho, n_batch);
   foo = ComputeCost(X, Y, W1, b1, W2, b2, hyper_parameters.lambda, hyper_parameters.K)

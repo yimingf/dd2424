@@ -12,6 +12,11 @@ for i=1:num_sample
   loss(i) = a2(eta, lambda);
 end
 
-% [~, ind] = min(loss);
-% eta(ind)
-% lambda(ind)
+for i=1:3
+  [~, ind] = min(loss);
+  eta(ind)
+  lambda(ind)
+  loss(ind) = [];
+  eta(ind) = [];
+  lambda(ind) = [];
+end

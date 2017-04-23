@@ -24,7 +24,7 @@ end
 % generate the hyper-parameters.
 hyper_parameters.a          = 0.001; % variance
 hyper_parameters.eta        = 0.02; % learning rate
-hyper_parameters.lambda     = 0.001; % regularization rate
+hyper_parameters.lambda     = 0.0015; % regularization rate
 hyper_parameters.n_batch    = 500; % number of batches
 hyper_parameters.n_epochs   = 60; % number of epoches
 hyper_parameters.decay_rate = 0.95;
@@ -38,15 +38,15 @@ b2 = zeros(hyper_parameters.K, 1);
 J_train = zeros(hyper_parameters.n_epochs, 1);
 J_validation = zeros(hyper_parameters.n_epochs, 1);
 
-% split = N-1000;
-% X_train = X(:, 1:split);
-% X_validation = X(:, split+1:N);
-% Y_train = Y(:, 1:split);
-% Y_validation = Y(:, split+1:N);
-% N = split;
+split = N-800;
+X_train = X(:, 1:split);
+X_validation = X(:, split+1:N);
+Y_train = Y(:, 1:split);
+Y_validation = Y(:, split+1:N);
+N = split;
 
 % the training process
-for i=1:20
+for i=1:hyper_parameters.n_epochs
 
   [W1, b1, W2, b2] = MiniBatchGD(X, Y, W1, b1, W2, b2, hyper_parameters);%, lambda, K, d, m, eta, rho, n_batch);
   foo = ComputeCost(X, Y, W1, b1, W2, b2, hyper_parameters.lambda, hyper_parameters.K)

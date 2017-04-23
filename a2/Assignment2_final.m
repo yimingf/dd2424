@@ -126,7 +126,7 @@ P = bsxfun(@rdivide, exp(s), sum(exp(s), 1));
 % LoadBatch.m
 function [X, Y, y, N, K, d, mu] = LoadBatch(filename)
 
-A = load('data_batch_1.mat');
+A = load(filename);
 X = im2double(A.data');
 mu = mean(X, 2);
 X = X-repmat(mu, [1, size(X, 2)]); % transfer to zero mean.

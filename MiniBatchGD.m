@@ -24,23 +24,23 @@ for j=1:N/n_batch
   Ybatch = Y(:, inds);
   % get the mini-batch of X and Y.
 
-  [P, H, s1] = EvaluateClassifier(Xbatch, W1, b1, W2, b2, K);
-  [grad_W1, grad_b1, grad_W2, grad_b2] = ComputeGradients(Xbatch, Ybatch, H, s1, P, W1, W2, b1, b2, lambda, K, d, m);
+  [P, H] = EvaluateClassifier(Xbatch, W1, b1, W2, b2, K);
+  [grad_W1, grad_b1, grad_W2, grad_b2] = ComputeGradients(Xbatch, Ybatch, H, P, W1, W2, b1, b2, lambda, K, d, m);
 
-  % % update the momentum.
-  % v_W1 = rho*v_W1+eta*grad_W1;
-  % v_b1 = rho*v_b1+eta*grad_b1;
-  % v_W2 = rho*v_W2+eta*grad_W2;
-  % v_b2 = rho*v_b2+eta*grad_b2;
-  % % update the weights and the bias.
-  % W1 = W1-v_W1;
-  % b1 = b1-v_b1;
-  % W2 = W2-v_W2;
-  % b2 = b2-v_b2;
+  % update the momentum.
+  v_W1 = rho*v_W1+eta*grad_W1;
+  v_b1 = rho*v_b1+eta*grad_b1;
+  v_W2 = rho*v_W2+eta*grad_W2;
+  v_b2 = rho*v_b2+eta*grad_b2;
+  % update the weights and the bias.
+  W1 = W1-v_W1;
+  b1 = b1-v_b1;
+  W2 = W2-v_W2;
+  b2 = b2-v_b2;
 
-  % update w/o momentum.
-  W1 = W1-eta*grad_W1;
-  b1 = b1-eta*grad_b1;
-  W2 = W2-eta*grad_W2;
-  b2 = b2-eta*grad_b2;
+  % % update w/o momentum.
+  % W1 = W1-eta*grad_W1;
+  % b1 = b1-eta*grad_b1;
+  % W2 = W2-eta*grad_W2;
+  % b2 = b2-eta*grad_b2;
 end % for j

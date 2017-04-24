@@ -6,29 +6,33 @@ addpath ~/dd2424/Datasets/cifar-10-batches-mat/
 clc, clear
 
 filename = {'data_batch_1.mat', 'data_batch_2.mat', 'data_batch_3.mat', 'data_batch_4.mat', 'data_batch_5.mat'};
-X = [];
-Y = [];
-y = [];
-N = 0;
-for i=1:5
-  [XX, YY, yy, NN, ...
+% X = [];
+% Y = [];
+% y = [];
+% N = 0;
+% for i=1:5
+  [X, Y, y, N, ...
     hyper_parameters.K, ...
     hyper_parameters.d ...
-  ] = LoadBatch(filename{i}); % 1
-  X = [X XX];
-  Y = [Y YY];
-  y = [y; yy];
-  N = N + NN;
-end
+  ] = LoadBatch(filename{1}); % 1
+  [X_validation, ...
+    Y_validation, ...
+    ~, ~, ~, ~ ...
+  ] = LoadBatch(filename{2});
+%   X = [X XX];
+%   Y = [Y YY];
+%   y = [y; yy];
+%   N = N + NN;
+% end
 
 % generate the hyper-parameters.
 hyper_parameters.a          = 0.001; % variance
-hyper_parameters.eta        = 0.0028; % learning rate
-hyper_parameters.lambda     = 0.0015; % regularization rate
-hyper_parameters.n_batch    = 500; % number of batches
-hyper_parameters.n_epochs   = 60; % number of epoches
+hyper_parameters.eta        = 0.02; % learning rate
+hyper_parameters.lambda     = 0.000015; % regularization rate
+hyper_parameters.n_batch    = 100; % number of batches
+hyper_parameters.n_epochs   = 10; % number of epoches
 hyper_parameters.decay_rate = 0.95;
-hyper_parameters.m          = 300; % hidden layer.
+hyper_parameters.m          = 100; % hidden layer.
 hyper_parameters.rho        = 0.9; % momentum parameter.
 
 W1 = hyper_parameters.a.*randn(hyper_parameters.m, hyper_parameters.d);
@@ -51,7 +55,7 @@ for i=1:hyper_parameters.n_epochs
   [W1, b1, W2, b2] = MiniBatchGD(X, Y, W1, b1, W2, b2, hyper_parameters);%, lambda, K, d, m, eta, rho, n_batch);
   foo = ComputeCost(X, Y, W1, b1, W2, b2, hyper_parameters.lambda, hyper_parameters.K)
   J_train(i) = foo;
-  % J_validation(i) = ComputeCost(X_validation, Y_validation, W1, b1, W2, b2, hyper_parameters.lambda, hyper_parameters.K);
+  J_validation(i) = ComputeCost(X_validation, Y_validation, W1, b1, W2, b2, hyper_parameters.lambda, hyper_parameters.K);
   if (mod(i, 10) == 0)
     hyper_parameters.eta = hyper_parameters.eta * hyper_parameters.decay_rate;
   end
@@ -62,4 +66,4 @@ end % for i
 
 % % calculate the accuracy
 [X, ~, y, ~, K, ~] = LoadBatch('test_batch.mat'); % 1
-acc = ComputeAccuracy(X, y, W1, b1, W2, b2, K)
+acc = ComputeAccuracy(X, y, W1, b1, W2, b2, hyper_parameters.K)

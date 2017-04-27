@@ -1,7 +1,7 @@
-function acc = ComputeAccuracy(X, y, W1, b1, W2, b2, K)
+function acc = ComputeAccuracy(X, y, W, b, hp)
 
 [~, N] = size(X);
-P = EvaluateClassifier(X, W1, b1, W2, b2, K);
+[P, ~] = EvaluateClassifier(X, W, b, hp);
 
-[~, k] = max(P);
+k = cell2mat(cellfun(@(x) find(x==max(x)), P, 'UniformOutput', false));
 acc = sum((k-1)'==y)/N;

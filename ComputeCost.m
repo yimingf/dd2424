@@ -1,5 +1,5 @@
-function J = ComputeCostComputeCost(X, Y, W1, b1, W2, b2, lambda, K)
+function J = ComputeCost(X, Y, W, b, hp)
 
 [~, N] = size(X);
-P = EvaluateClassifier(X, W1, b1, W2, b2, K);
-J = -sum(log(sum(Y.*P, 1)))/N+lambda*(sumsqr(W1)+sumsqr(W2));
+[P, ~] = EvaluateClassifier(X, W, b, hp);
+J = -sum(log(sum(cell2mat(cellfun(@(x, y) x.*y, Y, P, 'UniformOutput', false)), 1)))/N+hp.lambda*sum(cellfun(@sumsqr, W));

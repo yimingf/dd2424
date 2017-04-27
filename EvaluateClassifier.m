@@ -1,8 +1,15 @@
-% dedicated for kth dd2424 deepl2017 (deep learning) assignment 2.
-function [P, H] = EvaluateClassifier(X, W1, b1, W2, b2, K)
+% dedicated for kth dd2424 deepl2017 (deep learning) assignment 3 (k-layer).
+function [P, s] = EvaluateClassifier(X, W, b, hp)
   
-s1 = bsxfun(@plus, W1*X, b1);
-H = max(0, s1); % ReLU
-% H = 1./(1+exp(-s1)); % sigmoid
-s = bsxfun(@plus, W2*H, b2);
-P = bsxfun(@rdivide, exp(s), sum(exp(s), 1));
+s = cell(hp.n_layers, 1);
+s{1} = cellfun(@(x) W{1}*x+b{1}, X, 'UniformOutput', false);
+
+for i=2:hp.n_layers
+  H = cellfun(@(x) max(0, x), s{i-1}, 'UniformOutput', false); % ReLU
+  % H = 1./(1+exp(-s1)); % sigmoid
+  s{i} = cellfun(@(x) W{i}*x+b{i}, H, 'UniformOutput', false);
+end
+
+foo = exp(cell2mat(s{hp.n_layers}));
+P = bsxfun(@rdivide, foo, sum(foo, 1)); % softmax
+P = mat2cell(P, [size(P, 1)], ones(size(P, 2), 1)); % transform into cell

@@ -1,10 +1,13 @@
-function [W, b] = MiniBatchGD(X, Y, W, b, hp)
+function [W, b, ma] = MiniBatchGD(X, Y, W, b, hp)
 
 [~, N] = size(X);
 
 % initialize the momentum.
 v_W = cell(hp.n_layers, 1);
 v_b = cell(hp.n_layers, 1);
+ma.mu = cell(hp.n_layers, 1);
+ma.v = cell(hp.n_layers, 1);
+% 昨天写到这里 今天接着写
 for i=1:hp.n_layers
   v_W{i} = zeros(size(W{i}));
   v_b{i} = zeros(size(b{i}));

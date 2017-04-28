@@ -17,6 +17,7 @@ filename = {'data_batch_1.mat', 'data_batch_2.mat', 'data_batch_3.mat', 'data_ba
 
 % generate the hyper-parameters.
 hp.n_layers   = 3; % number of layers
+hp.alpha      = 0.99;
 hp.h_nodes    = [hp.d 50 30 hp.K]; % hidden nodes
 hp.a          = 0.001; % variance
 hp.eta        = 0.02; % learning rate
@@ -46,7 +47,7 @@ J_validation  = zeros(hp.n_epochs, 1);
 
 % the training process
 for i=1:hp.n_epochs
-  [W, b] = MiniBatchGD(X, Y, W, b, hp);
+  [W, b, ma] = MiniBatchGD(X, Y, W, b, hp);
   foo = ComputeCost(X, Y, W, b, hp)
   J_train(i) = foo;
   J_validation(i) = ComputeCost(X_validation, Y_validation, W, b, hp);

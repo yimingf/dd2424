@@ -8,10 +8,10 @@ mu = cell(hp.n_layers, 1);
 v = cell(hp.n_layers, 1);
 
 for i=1:(hp.n_layers-1)
-  % H = 1./(1+exp(-s1)); % sigmoid
   s{i} = cellfun(@(x) W{i}*x+b{i}, H, 'UniformOutput', false);
   mu{i} = mean(cell2mat(s{i}), 2);
   v{i} = var(cell2mat(s{i})')*(N-1)/N;
+
   H = cellfun(@(x) max(0, x), batchNormalize(s{i}, mu{i}, v{i}), ...
     'UniformOutput', false); % ReLU
 end

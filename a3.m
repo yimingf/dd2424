@@ -16,8 +16,8 @@ filename = {'data_batch_1.mat', 'data_batch_2.mat', 'data_batch_3.mat', 'data_ba
 ] = LoadBatch(filename{2});
 
 % generate the hyper-parameters.
-hp.n_layers   = 2; % number of layers
-hp.h_nodes    = [hp.d 100 hp.K]; % hidden nodes. (length = n_layers+1) (d m K)
+hp.n_layers   = 3; % number of layers
+hp.h_nodes    = [hp.d 50 30 hp.K]; % hidden nodes
 hp.a          = 0.001; % variance
 hp.eta        = 0.02; % learning rate
 hp.lambda     = 0; % regularization rate

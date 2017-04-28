@@ -18,8 +18,8 @@ for j=1:N/hp.n_batch
   Ybatch = Y(:, inds);
   % get the mini-batch of X and Y.
 
-  [P, s] = EvaluateClassifier(Xbatch, W, b, hp);
-  [grad_W, grad_b] = ComputeGradients(Xbatch, Ybatch, s, P, W, b, hp);
+  [P, s, mu, v] = EvaluateClassifier(Xbatch, W, b, hp);
+  [grad_W, grad_b] = ComputeGradients(Xbatch, Ybatch, s, P, mu, v, W, b, hp);
 
   % update the momentum.
   v_W = cellfun( @(x, y) hp.rho*x+hp.eta*y, ...

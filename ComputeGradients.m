@@ -1,7 +1,7 @@
-function [grad_W, grad_b] = ComputeGradients(X, Y, s, P, W, b, hp)
+function [grad_W, grad_b] = ComputeGradients(X, Y, s, P, mu, v, W, b, hp)
 
 [~, N] = size(X);
-
+g = cell(N, 1);
 % initialize the gradients.
 grad_W = cell(hp.n_layers, 1);
 grad_b = cell(hp.n_layers, 1);
@@ -10,53 +10,25 @@ for i=1:hp.n_layers
   grad_b{i} = zeros(size(b{i}));
 end
 
-g = cell(N, 1);
-
 % the last layer.
-x = cellfun(@(x) max(0, x), ...
-  s{hp.n_layers-1}, 'UniformOutput', false);
-g = cellfun(@(y, p) -y'/(y'*p)*(diag(p)-p*p'), ...
-  Y, P, 'UniformOutput', false);
-% 昨天写到这里 今天接着写
-
-for i=1:N
-  x = max(0, s{hp.n_layers-1}(:, i));
-  y = Y(:, i);
-  p = P(:, i);
-  g{i} = -y'/(y'*p)*(diag(p)-p*p');
-  % 昨天模仿到这里 今天接着写
-  grad_b{hp.n_layers} = grad_b{hp.n_layers}+g{i}';
-  grad_W{hp.n_layers} = grad_W{hp.n_layers}+g{i}'*x';
-
-  g{i} = g{i}*W{hp.n_layers};
-  g{i} = g{i}*diag(x>0);
-end
-% g = cellfun( @(x) x*W{hp.n_layers}, g, 'UniformOutput', false);
-% g = cellfun( @(x) x*diag(x>0), g, 'UniformOutput', false);
-
-% update the gradients.
+x = cellfun(@(x) max(0, x), s{hp.n_layers-1}, 'UniformOutput', false);
+g = cellfun(@(y, p) -y'/(y'*p)*(diag(p)-p*p'), Y, P, 'UniformOutput', false);
+grad_b{hp.n_layers} = sum(reshape(cell2mat(g), [hp.K, N]), 2);
+grad_W{hp.n_layers} = reshape(sum(cell2mat(cellfun(@(g, x) reshape(g'*x', [hp.K*hp.h_nodes(hp.n_layers), 1]), g, x, 'UniformOutput', false)), 2), [hp.K, hp.h_nodes(hp.n_layers)]);
+g = cellfun(@(g, x) g*W{hp.n_layers}*diag(x>0), g, x, 'UniformOutput', false);
 grad_W{hp.n_layers} = grad_W{hp.n_layers}/N+2*hp.lambda*W{hp.n_layers};
 grad_b{hp.n_layers} = grad_b{hp.n_layers}/N;
 
-for j=(hp.n_layers-1):(-1):2
-  % insert BatchNormBackPass(...arg) here.
-  for i=1:N
-    x = max(0, s{j-1}(:, i));
-    grad_b{j} = grad_b{j}+g{i}';
-    grad_W{j} = grad_W{j}+g{i}'*x';
-
-    g{i} = g{i}*W{j};
-    g{i} = g{i}*diag(x>0);
-  end % for i
-  grad_W{j} = grad_W{j}/N+2*hp.lambda*W{j};
-  grad_b{j} = grad_b{j}/N;
+for j=(hp.n_layers-1):(-1):1
+  g = batchNormBackPass(g, s{j}, mu{j}, v{j});
+  if (j == 1)
+    x = X;
+  else
+    x = cellfun(@(x) max(0, x), s{j-1}, 'UniformOutput', false);
+  end
+  grad_b{j} = (sum(reshape(cell2mat(g), [hp.h_nodes(j+1), N]), 2))/N;
+  grad_W{j} = (reshape(sum(cell2mat(cellfun(@(g, x) reshape(g'*x', [hp.h_nodes(j+1)*hp.h_nodes(j), 1]), g, x, 'UniformOutput', false)), 2), [hp.h_nodes(j+1), hp.h_nodes(j)]))/N+2*hp.lambda*W{j};
+  if (j>1)
+    g = cellfun(@(g, x) g*W{j}*diag(x>0), g, x, 'UniformOutput', false);
+  end
 end % for j
-
-for i=1:N
-  x = X(:, i);
-  grad_b{1} = grad_b{1}+g{i}';
-  grad_W{1} = grad_W{1}+g{i}'*x';
-end
-
-grad_W{1} = grad_W{1}/N+2*hp.lambda*W{1};
-grad_b{1} = grad_b{1}/N;

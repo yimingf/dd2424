@@ -21,8 +21,8 @@ hp.n_layers   = 3; % number of layers
 hp.alpha      = 0.99;
 hp.h_nodes    = [hp.d 50 30 hp.K]; % hidden nodes
 hp.a          = 0.001; % variance
-%hp.eta        = 0.02; % learning rate
-%hp.lambda     = 0; % regularization rate
+% hp.eta        = 0.0204; % learning rate
+hp.lambda     = 2.0309e-08; % regularization rate
 hp.n_batch    = 100; % number of batches
 hp.n_epochs   = 10; % number of epoches
 hp.decay_rate = 0.95; % decay rate of the learning rate.  
@@ -49,33 +49,30 @@ J_validation  = zeros(hp.n_epochs, 1);
 % N = split;
 
 max_coarse = 14;
-foo = linspace(1.69, 4, max_coarse);
-e = 10.^(-foo); % eta
-foo = linspace(4, 8, max_coarse);
-l = 10.^(-foo); % lambda
+e = linspace(0.05, 0.1, max_coarse);
+acc = zeros(max_coarse, 1);
 
-for i=1:max_coarse % for eta
-  for j=1:max_coarse % for lambda
-    hp.eta = e(i);
-    hp.lambda = l(j);
-    % re-initialize the weight matrices.
-    for k=1:hp.n_layers
-      W{k} = hp.a.*randn(hp.h_nodes(k+1), hp.h_nodes(k));
-      b{k} = zeros(hp.h_nodes(k+1), 1);
-    end
-    % the training process.
-    for k=1:hp.n_epochs
-      [W, b, ma] = MiniBatchGD(X, Y, W, b, hp, ma);
-      % foo = ComputeCost(X, Y, W, b, hp, ma)
-      % J_train(k) = foo;
-      %J_validation(i) = ComputeCost(X_validation, Y_validation, W, b, hp, ma);
-      % if (mod(k, 10) == 0)
-      %   hp.eta = hp.eta * hp.decay_rate;
-      % end
-    end % for k
-    fprintf('training process (%d, %d), accuracy: ', i, j);
-    acc(i, j) = ComputeAccuracy(Xtest, ytest, W, b, hp, ma);
-  end % for j
+for i=1:7 % for eta
+  % for j=[4 10 11 12 13] % for lambda
+  hp.eta = e(i);
+  % re-initialize the weight matrices.
+  for k=1:hp.n_layers
+    W{k} = hp.a.*randn(hp.h_nodes(k+1), hp.h_nodes(k));
+    b{k} = zeros(hp.h_nodes(k+1), 1);
+  end
+  % the training process.
+  for k=1:hp.n_epochs
+    [W, b, ma] = MiniBatchGD(X, Y, W, b, hp, ma);
+    % foo = ComputeCost(X, Y, W, b, hp, ma)
+    % J_train(k) = foo;
+    %J_validation(i) = ComputeCost(X_validation, Y_validation, W, b, hp, ma);
+    % if (mod(k, 10) == 0)
+    %   hp.eta = hp.eta * hp.decay_rate;
+    % end
+  end % for k
+  fprintf('training process (%d), accuracy: \n', i);
+  acc(i) = ComputeAccuracy(Xtest, ytest, W, b, hp, ma)
+  % end % for j
 end % for i
 
 % foo = J_train(hp.n_epochs);

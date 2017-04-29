@@ -1,13 +1,10 @@
-function [W, b, ma] = MiniBatchGD(X, Y, W, b, hp)
+function [W, b, ma] = MiniBatchGD(X, Y, W, b, hp, ma)
 
 [~, N] = size(X);
 
 % initialize the momentum.
 v_W = cell(hp.n_layers, 1);
 v_b = cell(hp.n_layers, 1);
-ma.mu = cell(hp.n_layers, 1);
-ma.v = cell(hp.n_layers, 1);
-% 昨天写到这里 今天接着写
 for i=1:hp.n_layers
   v_W{i} = zeros(size(W{i}));
   v_b{i} = zeros(size(b{i}));
@@ -22,6 +19,13 @@ for j=1:N/hp.n_batch
   % get the mini-batch of X and Y.
 
   [P, s, mu, v] = EvaluateClassifier(Xbatch, W, b, hp);
+  if (size(ma.mu{1}, 1)==0) % initialization.
+    ma.mu = mu;
+    ma.v  = v;
+  else % moving average.
+    ma.mu = cellfun(@(x, y) hp.alpha*x+(1-hp.alpha)*y, ma.mu, mu, 'UniformOutput', false);
+    ma.v  = cellfun(@(x, y) hp.alpha*x+(1-hp.alpha)*y, ma.v , v , 'UniformOutput', false);
+  end
   [grad_W, grad_b] = ComputeGradients(Xbatch, Ybatch, s, P, mu, v, W, b, hp);
 
   % update the momentum.

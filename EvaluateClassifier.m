@@ -19,9 +19,10 @@ for i=1:(hp.n_layers-1)
     mu{i} = mean(cell2mat(s{i}), 2);
     v{i} = var(cell2mat(s{i})')*(N-1)/N;
   end
+  % H = cellfun(@(x) max(0, x), s{i}, 'UniformOutput', false);
 
   H = cellfun(@(x) max(0, x), batchNormalize(s{i}, mu{i}, v{i}), ...
-    'UniformOutput', false); % ReLU
+  'UniformOutput', false); % ReLU
 end
 
 s{hp.n_layers} = cellfun(@(x) W{hp.n_layers}*x+b{hp.n_layers}, ...

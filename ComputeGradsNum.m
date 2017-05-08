@@ -1,29 +1,22 @@
-function [grad_b, grad_W] = ComputeGradsNum(X, Y, W, b, lambda, h, K)
+function num_grads = ComputeGradsNum(X, Y, RNN, h)
 
-grad_W = cell(numel(W), 1);
-grad_b = cell(numel(b), 1);
-
-c = ComputeCost(X, W1, b1, W2, b2, K);
-
-for j=1:length(b)
-    grad_b{j} = zeros(size(b{j}));
-    
-    for i=1:length(b{j})
-        b_try = b;
-        b_try{j}(i) = b_try{j}(i) + h;
-        [c2, ~] = ComputeCost(X, Y, W, b_try, lambda, K);
-        grad_b{j}(i) = (c2-c) / h;
-    end
+for f = fieldnames(RNN)'
+    disp('Computing numerical gradient for')
+    disp(['Field name: ' f{1} ]);
+    num_grads.(f{1}) = ComputeGradNumSlow(X, Y, f{1}, RNN, h);
 end
 
-for j=1:length(W)
-    grad_W{j} = zeros(size(W{j}));
-    
-    for i=1:numel(W{j})   
-        W_try = W;
-        W_try{j}(i) = W_try{j}(i) + h;
-        [c2, ~] = ComputeCost(X, Y, W_try, b, lambda, K);
-        
-        grad_W{j}(i) = (c2-c) / h;
-    end
+function grad = ComputeGradNum(X, Y, f, RNN, h)
+
+n = numel(RNN.(f));
+grad = zeros(size(RNN.(f)));
+hprev = zeros(size(RNN.W, 1), 1);
+for i=1:n
+    RNN_try = RNN;
+    RNN_try.(f)(i) = RNN.(f)(i) - h;
+    l1 = ComputeLoss(X, Y, RNN_try, hprev);
+    RNN_try.(f)(i) = RNN.(f)(i) + h;
+    l2 = ComputeLoss(X, Y, RNN_try, hprev);
+    grad(i) = (l2-l1)/(2*h);
 end
+

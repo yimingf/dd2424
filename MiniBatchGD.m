@@ -1,40 +1,18 @@
-function [W, b, ma] = MiniBatchGD(X, Y, W, b, hp, ma)
+function [RNN] = MiniBatchGD(book_data, book_chars, RNN)
 
-[~, N] = size(X);
+[~, N] = size(book_data);
 
-% initialize the momentum.
-v_W = cell(hp.n_layers, 1);
-v_b = cell(hp.n_layers, 1);
-for i=1:hp.n_layers
-  v_W{i} = zeros(size(W{i}));
-  v_b{i} = zeros(size(b{i}));
+X_chars = book_data(1:RNN.seq_length);
+Y_chars = book_data(2:RNN.seq_length+1);
+
+X = zeros(RNN.K, RNN.seq_length);
+Y = zeros(RNN.K, RNN.seq_length);
+
+for i=1:RNN.seq_length
+  X(char_to_int(X_chars(i)), i) = 1;
+  Y(char_to_int(Y_chars(i)), i) = 1;
 end
 
-for j=1:N/hp.n_batch
-  j_start = (j-1)*hp.n_batch+1;
-  j_end = j*hp.n_batch;
-  inds = j_start:j_end;
-  Xbatch = X(:, inds);
-  Ybatch = Y(:, inds);
-  % get the mini-batch of X and Y.
-
-  [P, s, mu, v] = EvaluateClassifier(Xbatch, W, b, hp);
-  if (size(ma.mu{1}, 1)==0) % initialization.
-    ma.mu = mu;
-    ma.v  = v;
-  else % moving average.
-    ma.mu = cellfun(@(x, y) hp.alpha*x+(1-hp.alpha)*y, ma.mu, mu, 'UniformOutput', false);
-    ma.v  = cellfun(@(x, y) hp.alpha*x+(1-hp.alpha)*y, ma.v , v , 'UniformOutput', false);
-  end
-  [grad_W, grad_b] = ComputeGradients(Xbatch, Ybatch, s, P, mu, v, W, b, hp);
-
-  % update the momentum.
-  v_W = cellfun( @(x, y) hp.rho*x+hp.eta*y, ...
-    v_W, grad_W, 'UniformOutput', false);
-  v_b = cellfun( @(x, y) hp.rho*x+hp.eta*y, ...
-    v_b, grad_b, 'UniformOutput', false);
-  W = cellfun( @(x, y) x-y, ...
-    W, v_W, 'UniformOutput', false);
-  b = cellfun( @(x, y) x-y, ...
-    b, v_b, 'UniformOutput', false);
-end % for j
+h0 = zeros(RNN.m, 1);
+[P, H, ~] = synthesizeText(RNN, h0, X(:, 1), RNN.seq_length);
+grads = ComputeGradients(X, Y, RNN, P, H);

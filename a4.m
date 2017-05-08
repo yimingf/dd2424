@@ -24,8 +24,8 @@ for i=1:RNN.N
 end
 
 % 1.2
-RNN.m           = 100; % #hidden states
-RNN.eta         = 0.1; % learning rate
+RNN.m           = 300; % #hidden states
+RNN.eta         = 0.2; % learning rate
 RNN.seq_length  = 25; % length of sequence
 RNN.sig         = 0.01;
 RNN.b           = zeros(RNN.m, 1);
@@ -34,7 +34,7 @@ RNN.U           = randn(RNN.m, RNN.K)*RNN.sig;
 RNN.W           = randn(RNN.m, RNN.m)*RNN.sig;
 RNN.V           = randn(RNN.K, RNN.m)*RNN.sig; % 7 8 9 10 11
 RNN.n           = 10; % depth of the network
-RNN.n_epochs    = 10;
+RNN.n_epochs    = 8;
 RNN.epsilon     = 1e-8; % AdaGrad
 RNN.g           = [7 8 9 10 11]; % b c U W V
 RNN.int_to_char = int_to_char;
@@ -44,17 +44,8 @@ RNN.char_to_int = char_to_int;
 
 % 1.3
 h0 = zeros(RNN.m, 1);
-for k=1:1%RNN.n_epochs
-  RNN = MiniBatchGD(X, book_chars, RNN);
-  % foo = ComputeCost(X, Y, W, b, hp, ma)
-  % J_train(k) = foo;
-  % J_validation(k) = ComputeCost(X_validation, Y_validation, W, b, hp, ma);
-  % if (mod(k, 10) == 0)
-  %   hp.eta = hp.eta * hp.decay_rate;
-  % end
-end % for k
-
-e = 1;
+[RNN] = MiniBatchGD(X, book_chars, RNN);
+e = 3000;
 X_batch = X(:, e:e+RNN.seq_length-1);
 Y_batch = X(:, e+1:e+RNN.seq_length);
 [~, ~, Y, ~, ~] = synthesizeText(RNN, X_batch, Y_batch, h0);

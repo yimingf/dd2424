@@ -1,10 +1,11 @@
 function [P, H, Y_predict, hafter, loss] = synthesizeText (RNN, X_batch, Y_batch, h0)
 
-P = zeros(RNN.K, RNN.seq_length);
-H = zeros(RNN.m, RNN.seq_length);
+[~, N] = size(X_batch);
+P = zeros(RNN.K, N);
+H = zeros(RNN.m, N);
 Y_predict = zeros(size(Y_batch));
 h = h0;
-for i=1:RNN.seq_length
+for i=1:N
   x = X_batch(:, i);
   a = RNN.W*h+RNN.U*x+RNN.b;
   h = tanh(a);
@@ -17,5 +18,5 @@ for i=1:RNN.seq_length
   P(:, i) = p;
   H(:, i) = h;
 end
-hafter = H(:, RNN.seq_length);
+hafter = H(:, N);
 loss = -sum(log(sum(Y_batch.*P, 1)+RNN.epsilon));

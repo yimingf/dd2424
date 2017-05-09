@@ -34,7 +34,7 @@ RNN.U           = randn(RNN.m, RNN.K)*RNN.sig;
 RNN.W           = randn(RNN.m, RNN.m)*RNN.sig;
 RNN.V           = randn(RNN.K, RNN.m)*RNN.sig; % 7 8 9 10 11
 RNN.n           = 10; % depth of the network
-RNN.n_epochs    = 8;
+RNN.n_epochs    = 15;
 RNN.epsilon     = 1e-6; % AdaGrad
 RNN.g           = [7 8 9 10 11]; % b c U W V
 RNN.int_to_char = int_to_char;
@@ -45,12 +45,12 @@ RNN.char_to_int = char_to_int;
 % 1.3
 h0 = zeros(RNN.m, 1);
 [RNN] = MiniBatchGD(X, book_chars, RNN);
-e = 3000;
-X_batch = X(:, e:e+RNN.seq_length-1);
-Y_batch = X(:, e+1:e+RNN.seq_length);
+e = 1;
+X_batch = X(:, e:e+1000-1);
+Y_batch = X(:, e+1:e+1000);
 [~, ~, Y, ~, ~] = synthesizeText(RNN, X_batch, Y_batch, h0);
 
-for i=1:RNN.seq_length
+for i=1:1000
   chars(i) = int_to_char(find(Y(:, i) == 1));
 end
 chars

@@ -24,8 +24,8 @@ for i=1:RNN.N
 end
 
 % 1.2
-RNN.m           = 300; % #hidden states
-RNN.eta         = 0.2; % learning rate
+RNN.m           = 100; % #hidden states
+RNN.eta         = 0.001; % learning rate
 RNN.seq_length  = 25; % length of sequence
 RNN.sig         = 0.01;
 RNN.b           = zeros(RNN.m, 1);
@@ -35,7 +35,7 @@ RNN.W           = randn(RNN.m, RNN.m)*RNN.sig;
 RNN.V           = randn(RNN.K, RNN.m)*RNN.sig; % 7 8 9 10 11
 RNN.n           = 10; % depth of the network
 RNN.n_epochs    = 8;
-RNN.epsilon     = 1e-8; % AdaGrad
+RNN.epsilon     = 1e-6; % AdaGrad
 RNN.g           = [7 8 9 10 11]; % b c U W V
 RNN.int_to_char = int_to_char;
 RNN.char_to_int = char_to_int;

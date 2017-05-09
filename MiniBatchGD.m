@@ -3,9 +3,9 @@ function [RNN] = MiniBatchGD(X, book_chars, RNN)
 foo = 1;
 smooth_loss = 0;
 f = fieldnames(RNN)';
-for i=RNN.g
-  m.(f{i}) = zeros(size(RNN.(f{i})));
-end
+% for i=RNN.g
+%   m.(f{i}) = zeros(size(RNN.(f{i})));
+% end
 loss = zeros(100, 1);
 
 for epoch = 1:RNN.n_epochs
@@ -20,8 +20,8 @@ for epoch = 1:RNN.n_epochs
     hprev = hafter;
 
     for i=RNN.g % AdaGrad
-      m.(f{i}) = m.(f{i})+grads.(f{i}).^2;
-      RNN.(f{i}) = RNN.(f{i})-RNN.eta*grads.(f{i})./sqrt(m.(f{i})+RNN.epsilon);
+      % m.(f{i}) = m.(f{i})+grads.(f{i}).^2;
+      RNN.(f{i}) = RNN.(f{i})-RNN.eta*grads.(f{i});%./sqrt(m.(f{i})+RNN.epsilon);
     end
 
     if (foo == 1)
@@ -30,8 +30,6 @@ for epoch = 1:RNN.n_epochs
       smooth_loss = 0.999*smooth_loss+0.001*l;
     end
 
-    foo = foo+1;
-    e = e+RNN.seq_length;
     if (mod(foo, 10000) == 0) % every 100 iterations.
       foo
       smooth_loss
@@ -42,6 +40,8 @@ for epoch = 1:RNN.n_epochs
         chars(i) = RNN.int_to_char(find(Y(:, i) == 1));
       end
       chars
-    end
+    end % if
+    e = e+RNN.seq_length;
+    foo = foo+1;
   end
 end

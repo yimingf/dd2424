@@ -25,7 +25,7 @@ end
 
 % 1.2
 RNN.m           = 100; % #hidden states
-RNN.eta         = 0.001; % learning rate
+RNN.eta         = 0.01; % learning rate
 RNN.seq_length  = 25; % length of sequence
 RNN.sig         = 0.01;
 RNN.b           = zeros(RNN.m, 1);
@@ -34,8 +34,8 @@ RNN.U           = randn(RNN.m, RNN.K)*RNN.sig;
 RNN.W           = randn(RNN.m, RNN.m)*RNN.sig;
 RNN.V           = randn(RNN.K, RNN.m)*RNN.sig; % 7 8 9 10 11
 RNN.n           = 10; % depth of the network
-RNN.n_epochs    = 15;
-RNN.epsilon     = 1e-6; % AdaGrad
+RNN.n_epochs    = 2;
+RNN.epsilon     = 1e-9; % AdaGrad
 RNN.g           = [7 8 9 10 11]; % b c U W V
 RNN.int_to_char = int_to_char;
 RNN.char_to_int = char_to_int;
@@ -45,7 +45,7 @@ RNN.char_to_int = char_to_int;
 % 1.3
 h0 = zeros(RNN.m, 1);
 [RNN] = MiniBatchGD(X, book_chars, RNN);
-e = 1;
+e = 8000;
 X_batch = X(:, e:e+1000-1);
 Y_batch = X(:, e+1:e+1000);
 [~, ~, Y, ~, ~] = synthesizeText(RNN, X_batch, Y_batch, h0);

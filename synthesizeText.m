@@ -5,16 +5,22 @@ P = zeros(RNN.K, N);
 H = zeros(RNN.m, N);
 Y_predict = zeros(size(Y_batch));
 h = h0;
+x = zeros(RNN.K, 1);
 for i=1:N
-  x = X_batch(:, i);
+  % x = X_batch(:, i);
   a = RNN.W*h+RNN.U*x+RNN.b;
   h = tanh(a);
   o = RNN.V*h+RNN.c;
   foo = exp(o);
   p = bsxfun(@rdivide, foo, sum(foo, 1)); % softmax
 
-  [~, k] = max(p);
-  Y_predict(k, i) = 1;
+  cp = cumsum(p);
+  a = rand;
+  ixs = find(cp-a>0);
+  ii = ixs(1); % corrected pick-up method. respect the randomness.
+
+  Y_predict(ii, i) = 1;
+  x = Y_predict(:, i);
   P(:, i) = p;
   H(:, i) = h;
 end

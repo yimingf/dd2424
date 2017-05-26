@@ -6,6 +6,7 @@ H = zeros(RNN.m, N);
 Y = zeros(size(Y_batch));
 h = h0;
 x = zeros(RNN.K, 1);
+x(11) = 1; % encoding of '.', the default character.
 for i=1:N
   a = RNN.W*h+RNN.U*x+RNN.b;
   h = tanh(a);

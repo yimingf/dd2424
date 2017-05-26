@@ -25,7 +25,7 @@ end
 
 % 1.2
 RNN.m           = 100; % #hidden states
-RNN.eta         = 0.001; % learning rate
+RNN.eta         = 0.1; % learning rate
 RNN.seq_length  = 25; % length of sequence
 RNN.sig         = 0.01;
 RNN.b           = zeros(RNN.m, 1);
@@ -34,8 +34,8 @@ RNN.U           = randn(RNN.m, RNN.K)*RNN.sig;
 RNN.W           = randn(RNN.m, RNN.m)*RNN.sig;
 RNN.V           = randn(RNN.K, RNN.m)*RNN.sig; % 7 8 9 10 11
 RNN.n           = 10; % depth of the network
-RNN.n_epochs    = 15;
-RNN.epsilon     = 1e-6; % AdaGrad
+RNN.n_epochs    = 10;
+RNN.epsilon     = 1e-8; % AdaGrad
 RNN.g           = [7 8 9 10 11]; % b c U W V
 RNN.int_to_char = int_to_char;
 RNN.char_to_int = char_to_int;
@@ -44,11 +44,11 @@ RNN.char_to_int = char_to_int;
 
 % 1.3
 h0 = zeros(RNN.m, 1);
-[RNN] = MiniBatchGD(X, book_chars, RNN);
+RNN = MiniBatchGD(X, book_chars, RNN);
 e = 1;
 X_batch = X(:, e:e+1000-1);
 Y_batch = X(:, e+1:e+1000);
-[~, ~, Y, ~, ~] = synthesizeText(RNN, X_batch, Y_batch, h0);
+Y = synthesizeText(RNN, X_batch, Y_batch, h0);
 
 for i=1:1000
   chars(i) = int_to_char(find(Y(:, i) == 1));
@@ -61,10 +61,9 @@ function [RNN] = MiniBatchGD(X, book_chars, RNN)
 foo = 1;
 smooth_loss = 0;
 f = fieldnames(RNN)';
-% for i=RNN.g
-%   m.(f{i}) = zeros(size(RNN.(f{i})));
-% end
-loss = zeros(100, 1);
+for i=RNN.g
+  m.(f{i}) = zeros(size(RNN.(f{i})));
+end
 
 for epoch = 1:RNN.n_epochs
   e = 1;
@@ -73,13 +72,13 @@ for epoch = 1:RNN.n_epochs
     X_batch = X(:, e:e+RNN.seq_length-1);
     Y_batch = X(:, e+1:e+RNN.seq_length);
 
-    [P, H, ~, hafter, l] = synthesizeText(RNN, X_batch, Y_batch, hprev);
+    [P, H, hafter, l] = forwardPass(RNN, X_batch, Y_batch, hprev);
     grads = ComputeGradients(X_batch, Y_batch, RNN, P, H, hprev);
     hprev = hafter;
 
     for i=RNN.g % AdaGrad
-      % m.(f{i}) = m.(f{i})+grads.(f{i}).^2;
-      RNN.(f{i}) = RNN.(f{i})-RNN.eta*grads.(f{i});%./sqrt(m.(f{i})+RNN.epsilon);
+      m.(f{i}) = m.(f{i})+grads.(f{i}).^2;
+      RNN.(f{i}) = RNN.(f{i})-RNN.eta*grads.(f{i})./sqrt(m.(f{i})+RNN.epsilon);
     end
 
     if (foo == 1)
@@ -88,31 +87,25 @@ for epoch = 1:RNN.n_epochs
       smooth_loss = 0.999*smooth_loss+0.001*l;
     end
 
+    e = e+RNN.seq_length;
+
     if (mod(foo, 10000) == 0) % every 100 iterations.
       foo
       smooth_loss
       X_batch = X(:, e:e+199);
       Y_batch = X(:, e+1:e+200);
-      [~, ~, Y, ~, ~] = synthesizeText(RNN, X_batch, Y_batch, hprev);
+      Y = synthesizeText(RNN, X_batch, Y_batch, hprev);
       for i=1:200
         chars(i) = RNN.int_to_char(find(Y(:, i) == 1));
       end
       chars
     end % if
-    e = e+RNN.seq_length;
     foo = foo+1;
   end
 end
 
-% ComputeLoss.m
-function J = ComputeLoss(X, Y, RNN, h0)
-
-[~, N] = size(X);
-[P, H, ~] = synthesizeText(RNN, X, Y, h0);
-J = -sum(log(sum(Y.*P, 1)+RNN.epsilon));
-
-% synthesizeText.m
-function [P, H, Y_predict, hafter, loss] = synthesizeText (RNN, X_batch, Y_batch, h0)
+% forwardPass.m
+function [P, H, hafter, loss] = forwardPass (RNN, X_batch, Y_batch, h0)
 
 [~, N] = size(X_batch);
 P = zeros(RNN.K, N);
@@ -127,8 +120,43 @@ for i=1:N
   foo = exp(o);
   p = bsxfun(@rdivide, foo, sum(foo, 1)); % softmax
 
-  [~, k] = max(p);
-  Y_predict(k, i) = 1;
+  P(:, i) = p;
+  H(:, i) = h;
+end
+hafter = H(:, N);
+loss = -sum(log(sum(Y_batch.*P, 1)+RNN.epsilon));
+
+% ComputeLoss.m
+function J = ComputeLoss(X, Y, RNN, h0)
+
+[~, N] = size(X);
+[P, H, ~] = synthesizeText(RNN, X, Y, h0);
+J = -sum(log(sum(Y.*P, 1)+RNN.epsilon));
+
+% synthesizeText.m
+function [Y] = synthesizeText (RNN, X_batch, Y_batch, h0)
+
+[~, N] = size(X_batch);
+P = zeros(RNN.K, N);
+H = zeros(RNN.m, N);
+Y = zeros(size(Y_batch));
+h = h0;
+x = zeros(RNN.K, 1);
+x(11) = 1; % encoding of '.', the default character.
+for i=1:N
+  a = RNN.W*h+RNN.U*x+RNN.b;
+  h = tanh(a);
+  o = RNN.V*h+RNN.c;
+  foo = exp(o);
+  p = bsxfun(@rdivide, foo, sum(foo, 1)); % softmax
+
+  cp = cumsum(p);
+  a = rand;
+  ixs = find(cp-a>0);
+  ii = ixs(1); % corrected pick-up method. respect the randomness.
+
+  Y(ii, i) = 1;
+  x = Y(:, i);
   P(:, i) = p;
   H(:, i) = h;
 end

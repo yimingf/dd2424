@@ -31,7 +31,7 @@ for epoch = 1:RNN.n_epochs
 
     e = e+RNN.seq_length;
 
-    if (mod(foo, 1000) == 0) % every 100 iterations.
+    if (mod(foo, 10000) == 0) % every 100 iterations.
       foo
       smooth_loss
       X_batch = X(:, e:e+199);
